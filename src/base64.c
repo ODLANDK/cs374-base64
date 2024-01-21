@@ -18,6 +18,12 @@ main(int argc, char *argv[])
 {
   printf("The base64 alphabet is: %s\n", b64a);
 
+
+
+
+
+
+
   /* You can use the gprintf function provided along with this source code to
    * print debugging messages, which won't show up in your release build.
    */
