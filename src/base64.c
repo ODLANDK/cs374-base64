@@ -5,13 +5,63 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 #include "gprintf.h"
+
+#if CHAR_BIT != 8
+#error "CHAR_BIT != 8"
+#endif
 
 static char const b64a[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
                            "abcdefghijklmnopqrstuvwxyz"
                            "0123456789"
                            "+/";
+
+#define SIX_BIT 6
+void
+base64encode(char *data, size_t n, char *message)
+{
+  static char const b64a[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                           "abcdefghijklmnopqrstuvwxyz"
+                           "0123456789"
+                           "+/";
+  static char const pad_char = '=';        /* Padding character */
+
+  for (size_t i = 0; i < n; ++i) {
+    /* Shift three bytes into a dword */
+    int bytes = 1;
+    unsigned long dword = data[i];
+
+    /* Second byte */
+    dword <<= CHAR_BIT;
+    if (++i < n) {
+      dword |= data[i];
+      ++bytes;
+    }
+
+    /* Third byte */
+    dword <<= CHAR_BIT;
+    if (++i < n) {
+      dword |= data[i];
+      ++bytes;
+    }
+
+    /* Process input, six bits at a time */
+    for (int j = 0; j < ((3 * CHAR_BIT) / SIX_BIT); ++j) {
+      if ((j * SIX_BIT) > (bytes * CHAR_BIT)) {
+        message[j] = pad_char;
+      } else {
+        int idx = dword >> (3 * CHAR_BIT - SIX_BIT);
+        char c = b64a[idx];
+        message[j] = c;
+        dword <<= SIX_BIT; /* Left shift */
+        dword &= 0xffffff;     /* Discard upper bits > 24th position */
+      }
+    }
+  }
+}
+
 
 int
 main(int argc, char *argv[])
@@ -65,13 +115,34 @@ main(int argc, char *argv[])
                          meant to be used for fast i/o. Typically a small
                          multiple of the system's page size (which is typically
                          4kB)--4096, 8092, etc... */
+    char encodeMessage[4];
+    int charCount = 0;
+
     for (;;) {
       size_t nr = fread(buf, 1, sizeof buf, fp);
       if (nr < sizeof buf && ferror(stdin)) err(EXIT_FAILURE, "%s", argv[1]);
       if (nr == 0) break; /* end of file, empty buffer */
 
+      for (int j = 0; j < nr; j+3) {
+
+        char inputMsg[3];
+        inputMsg[0] = buf[j];
+        inputMsg[1] = buf[j+1];
+        inputMsg[2] = buf[j+2];
+
+        base64encode(inputMsg, 4, encodeMessage);
+
+        for (int k = 0; k < 4; k++) {
+          fwrite(encodeMessage, 1, 4, stdout);
+          if (++charCount >= 76) {
+            charCount = 0;
+            fputc("\n", stdout);
+          }
+      }
+
+/*
       size_t nw = fwrite(buf, 1, nr, stdout);
-      if (nw < nr) err(EXIT_FAILURE, "stdout");
+      if (nw < nr) err(EXIT_FAILURE, "stdout");*/
 
       if (nr < sizeof buf) break; /* end of file, partial buffer */
     }
