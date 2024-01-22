@@ -129,6 +129,52 @@ base8encode(char const *data, size_t n)
   putchar('\n');
 }
 
+void
+base64encode(char const *data, size_t n)
+{
+  static char const b64a[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+                           "abcdefghijklmnopqrstuvwxyz"
+                           "0123456789"
+                           "+/";
+  static char const pad_char = '=';        /* Padding character */
+
+  for (size_t i = 0; i < n; ++i) {
+    /* Shift three bytes into a dword */
+    int bytes = 1;
+    unsigned long dword = data[i];
+
+    /* Second byte */
+    dword <<= CHAR_BIT;
+    if (++i < n) {
+      dword |= data[i];
+      ++bytes;
+    }
+
+    /* Third byte */
+    dword <<= CHAR_BIT;
+    if (++i < n) {
+      dword |= data[i];
+      ++bytes;
+    }
+
+    /* Process input, three bits at a time */
+    for (int j = 0; j < ((3 * CHAR_BIT) / TRIBBLE_BIT); ++j) {
+      if ((j * TRIBBLE_BIT) > (bytes * CHAR_BIT)) {
+        putchar(pad_char);
+      } else {
+        int idx = dword >> (3 * CHAR_BIT - TRIBBLE_BIT);
+        char c = b64a[idx];
+        putchar(c);
+        dword <<= TRIBBLE_BIT; /* Left shift */
+        dword &= 0xffffff;     /* Discard upper bits > 24th position */
+      }
+    }
+  }
+  putchar('\n');
+}
+
+
+
 /* Let's consider base32 and base64 as well,
  * Log2(32) = 5 -> LCM(5, 8) = 40
  * Log2(64) = 6 -> LCM(6, 8) = 24
@@ -153,4 +199,6 @@ main(int argc, char *argv[])
   base8encode(msg, ARRAY_LEN(msg));
   puts("Base16 encoding:");
   base16encode(msg, ARRAY_LEN(msg));
+  puts("Base64 encoding:");
+  base64encode(msg, ARRAY_LEN(msg));
 }
