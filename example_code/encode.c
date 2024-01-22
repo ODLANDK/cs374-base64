@@ -193,7 +193,7 @@ base64encode(char const *data, size_t n)
 int
 main(int argc, char *argv[])
 {
-  char msg[3] = "hello24";
+  char msg[] = "hello24";
   puts("Base2 encoding:");
   base2encode(msg, ARRAY_LEN(msg));
   puts("Base8 encoding:");
