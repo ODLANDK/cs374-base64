@@ -158,7 +158,7 @@ base64encode(char const *data, size_t n)
       ++bytes;
     }
 
-    /* Process input, three bits at a time */
+    /* Process input, six bits at a time */
     for (int j = 0; j < ((3 * CHAR_BIT) / SIX_BIT); ++j) {
       if ((j * SIX_BIT) > (bytes * CHAR_BIT)) {
         putchar(pad_char);
@@ -193,7 +193,7 @@ base64encode(char const *data, size_t n)
 int
 main(int argc, char *argv[])
 {
-  char msg[3] = "foo";
+  char msg[3] = "hello24";
   puts("Base2 encoding:");
   base2encode(msg, ARRAY_LEN(msg));
   puts("Base8 encoding:");
