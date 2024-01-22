@@ -129,6 +129,7 @@ base8encode(char const *data, size_t n)
   putchar('\n');
 }
 
+#define SIX_BIT 6
 void
 base64encode(char const *data, size_t n)
 {
@@ -158,14 +159,14 @@ base64encode(char const *data, size_t n)
     }
 
     /* Process input, three bits at a time */
-    for (int j = 0; j < ((3 * CHAR_BIT) / TRIBBLE_BIT); ++j) {
-      if ((j * TRIBBLE_BIT) > (bytes * CHAR_BIT)) {
+    for (int j = 0; j < ((3 * CHAR_BIT) / SIX_BIT); ++j) {
+      if ((j * SIX_BIT) > (bytes * CHAR_BIT)) {
         putchar(pad_char);
       } else {
-        int idx = dword >> (3 * CHAR_BIT - TRIBBLE_BIT);
+        int idx = dword >> (3 * CHAR_BIT - SIX_BIT);
         char c = b64a[idx];
         putchar(c);
-        dword <<= TRIBBLE_BIT; /* Left shift */
+        dword <<= SIX_BIT; /* Left shift */
         dword &= 0xffffff;     /* Discard upper bits > 24th position */
       }
     }
