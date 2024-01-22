@@ -123,7 +123,7 @@ main(int argc, char *argv[])
       if (nr < sizeof buf && ferror(stdin)) err(EXIT_FAILURE, "%s", argv[1]);
       if (nr == 0) break; /* end of file, empty buffer */
 
-      for (int j = 0; j < nr; j+3) {
+      for (int j = 0; j < nr; j+=3) {
 
         char inputMsg[3];
         inputMsg[0] = buf[j];
@@ -136,10 +136,10 @@ main(int argc, char *argv[])
           fwrite(encodeMessage, 1, 4, stdout);
           if (++charCount >= 76) {
             charCount = 0;
-            fputc("\n", stdout);
+            fputc('\n', stdout);
           }
+        }
       }
-
 /*
       size_t nw = fwrite(buf, 1, nr, stdout);
       if (nw < nr) err(EXIT_FAILURE, "stdout");*/
@@ -157,14 +157,14 @@ main(int argc, char *argv[])
 
   /* You can use the gprintf function provided along with this source code to
    * print debugging messages, which won't show up in your release build.
-   */
+   
   gprintf("I received %d arguments\n", argc);
   for (int i = 0; i < argc; ++i) {
     gprintf("Argument %d is %s\n", i, argv[i]);
   }
-
+*/
   assert(0); /* Notice that assertions only affect the debug build; this is
-                because the NDEBUG macro is defined in the command-line of the
+           :     because the NDEBUG macro is defined in the command-line of the
                 release build (-DNDEBUG) */
 
   puts("Made it to the end! Goodbye :)");
